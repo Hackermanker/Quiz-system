@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Quiz System</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #003300; /* Dark Green Background */
+            font-family: Arial, sans-serif;
+            color: #E0E0E0; /* Light Gray Text */
+            margin: 0;
+            padding: 10px;
+            position: relative;
+            background-image: url('scientists-overlay.png'); /* Add outline images of scientists */
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0.9;
+        }
+        .quiz-container {
+            background: #004d00; /* Dark Green Monochrome Panel */
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
+            text-align: center;
+            width: 90%;
+            max-width: 500px;
+        }
+        #question-text {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+        #options input {
+            margin: 10px;
+        }
+        #options label {
+            font-size: 18px;
+            color: #B2FF66; /* Light Green Text */
+            display: block;
+            padding: 10px;
+        }
+        button {
+            font-size: 20px;
+            padding: 12px 20px;
+            margin-top: 20px;
+            background-color: #009933; /* Vibrant Green */
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+        }
+        button:hover {
+            background-color: #007722;
+        }
+        @media (max-width: 600px) {
+            #question-text {
+                font-size: 20px;
+            }
+            #options label {
+                font-size: 16px;
+            }
+            button {
+                font-size: 18px;
+                padding: 10px;
+            }
+        }
+    </style>
+    <script>
+        let timeLeft = 20;
+        let timer;
+        let currentQuestion = 0;
+        const questions = [
+            { question: "What is the capital of France?", options: ["Paris", "London", "Berlin", "Rome"], answer: "Paris" },
+            { question: "Who won the world cup in 2022?", options: ["Lionel Messi", "Neymar jr", "Benzema", "Rashford"], answer: "Lionel Messi" },
+            { question: "What is the largest planet in our solar system?", options: ["Earth", "Jupiter", "Mars", "Saturn"], answer: "Jupiter" },
+            { question: "Who wrote 'Hamlet'?", options: ["Shakespeare", "Hemingway", "Tolkien", "Dickens"], answer: "Shakespeare" },
+            { question: "What is the boiling point of water?", options: ["90°C", "100°C", "110°C", "120°C"], answer: "100°C" }
+        ];
+        let userAnswers = [];
+
+        function startTimer() {
+            timeLeft = 20;
+            document.getElementById("timer").innerText = `Time Left: ${timeLeft} sec`;
+            timer = setInterval(function () {
+                if (timeLeft <= 0) {
+                    clearInterval(timer);
+                    nextQuestion();
+                } else {
+                    document.getElementById("timer").innerText = `Time Left: ${timeLeft} sec`;
+                    timeLeft--;
+                }
+            }, 1000);
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                showResults();
+                return;
+            }
+            
+            document.getElementById("question-text").innerText = questions[currentQuestion].question;
+            let optionsHtml = "";
+            questions[currentQuestion].options.forEach(option => {
+                optionsHtml += `<input type='radio' name='q' value='${option}' id='${option}'> <label for='${option}'>${option}</label>`;
+            });
+            document.getElementById("options").innerHTML = optionsHtml;
+            startTimer();
+        }
+
+        function nextQuestion() {
+            clearInterval(timer);
+            let selected = document.querySelector("input[name='q']:checked");
+            userAnswers.push(selected ? selected.value : "No answer");
+            currentQuestion++;
+            loadQuestion();
+        }
+
+        function showResults() {
+            let score = 0;
+            let resultHtml = "<h3>Quiz Completed!</h3><h3>Your Score:</h3>";
+            questions.forEach((q, index) => {
+                if (userAnswers[index] === q.answer) score++;
+                resultHtml += `<p>${q.question}<br>Your Answer: ${userAnswers[index]}<br>Correct Answer: ${q.answer}</p>`;
+            });
+            resultHtml += `<h3>Final Score: ${score}/${questions.length}</h3>`;
+            document.getElementById("quiz-container").innerHTML = resultHtml;
+        }
+    </script>
+</head>
+<body onload="loadQuestion()">
+    <div id="quiz-container" class="quiz-container">
+        <h2>Online Quiz</h2>
+        <p id="timer">Time Left: 20 sec</p>
+        <p id="question-text"></p>
+        <div id="options"></div>
+        <button onclick="nextQuestion()">Next</button>
+    </div>
+</body>
+</html>
