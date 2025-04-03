@@ -11,85 +11,59 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            background-color: #003300; /* Dark Green Background */
+            background-color: #003300;
             font-family: Arial, sans-serif;
-            color: #E0E0E0; /* Light Gray Text */
+            color: #E0E0E0;
             margin: 0;
             padding: 10px;
-            position: relative;
-            background-image: url('scientists-overlay.png'); /* Add outline images of scientists */
-            background-size: cover;
-            background-position: center;
-            background-repeat: no-repeat;
-            opacity: 0.9;
+            text-align: center;
         }
         .quiz-container {
-            background: #004d00; /* Dark Green Monochrome Panel */
+            background: #004d00;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 0 15px rgba(255, 255, 255, 0.2);
-            text-align: center;
             width: 90%;
             max-width: 500px;
         }
-        #question-text {
-            font-size: 22px;
-            font-weight: bold;
-            margin-bottom: 20px;
-        }
-        #options input {
-            margin: 10px;
-        }
-        #options label {
+        .category-btn, button {
             font-size: 18px;
-            color: #B2FF66; /* Light Green Text */
-            display: block;
             padding: 10px;
-        }
-        button {
-            font-size: 20px;
-            padding: 12px 20px;
-            margin-top: 20px;
-            background-color: #009933; /* Vibrant Green */
+            margin: 10px;
+            background-color: #009933;
             color: white;
             border: none;
             border-radius: 5px;
             cursor: pointer;
             width: 100%;
         }
-        button:hover {
+        .category-btn:hover, button:hover {
             background-color: #007722;
         }
-        @media (max-width: 600px) {
-            #question-text {
-                font-size: 20px;
-            }
-            #options label {
-                font-size: 16px;
-            }
-            button {
-                font-size: 18px;
-                padding: 10px;
-            }
+        .hidden {
+            display: none;
         }
     </style>
     <script>
-        let timeLeft = 20;
-        let timer;
-        let currentQuestion = 0;
-        const questions = [
-            { question: "What is the capital of France?", options: ["Paris", "London", "Berlin", "Rome"], answer: "Paris" },
-            { question: "Who won the world cup in 2022?", options: ["Lionel Messi", "Neymar jr", "Benzema", "Rashford"], answer: "Lionel Messi" },
-            { question: "What is the largest planet in our solar system?", options: ["Earth", "Jupiter", "Mars", "Saturn"], answer: "Jupiter" },
-            { question: "Who wrote 'Hamlet'?", options: ["Shakespeare", "Hemingway", "Tolkien", "Dickens"], answer: "Shakespeare" },
-            { question: "What is the boiling point of water?", options: ["90°C", "100°C", "110°C", "120°C"], answer: "100°C" }
-        ];
+        let selectedCategory = "";
+        let currentQuestionIndex = 0;
         let userAnswers = [];
+        let timer;
+        let timeLeft = 20;
+
+        function selectCategory(category) {
+            selectedCategory = category;
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            document.getElementById("category-selection").classList.add("hidden");
+            document.getElementById("quiz-container").classList.remove("hidden");
+            loadQuestion();
+        }
 
         function startTimer() {
             timeLeft = 20;
             document.getElementById("timer").innerText = `Time Left: ${timeLeft} sec`;
-            timer = setInterval(function () {
+            timer = setInterval(() => {
                 if (timeLeft <= 0) {
                     clearInterval(timer);
                     nextQuestion();
@@ -101,17 +75,14 @@
         }
 
         function loadQuestion() {
-            if (currentQuestion >= questions.length) {
+            clearInterval(timer);
+            if (currentQuestionIndex >= 5) {
                 showResults();
                 return;
             }
-            
-            document.getElementById("question-text").innerText = questions[currentQuestion].question;
-            let optionsHtml = "";
-            questions[currentQuestion].options.forEach(option => {
-                optionsHtml += `<input type='radio' name='q' value='${option}' id='${option}'> <label for='${option}'>${option}</label>`;
-            });
-            document.getElementById("options").innerHTML = optionsHtml;
+            let questionObj = questions[selectedCategory][currentQuestionIndex];
+            let optionsHtml = questionObj.options.map(opt => `<label><input type='radio' name='q' value='${opt}'> ${opt}</label>`).join("<br>");
+            document.getElementById("quiz-container").innerHTML = `<h3>${questionObj.question}</h3>${optionsHtml}<br><p id='timer'></p><button onclick='nextQuestion()'>Next</button>`;
             startTimer();
         }
 
@@ -119,29 +90,55 @@
             clearInterval(timer);
             let selected = document.querySelector("input[name='q']:checked");
             userAnswers.push(selected ? selected.value : "No answer");
-            currentQuestion++;
+            currentQuestionIndex++;
             loadQuestion();
         }
 
         function showResults() {
             let score = 0;
             let resultHtml = "<h3>Quiz Completed!</h3><h3>Your Score:</h3>";
-            questions.forEach((q, index) => {
+            questions[selectedCategory].forEach((q, index) => {
                 if (userAnswers[index] === q.answer) score++;
                 resultHtml += `<p>${q.question}<br>Your Answer: ${userAnswers[index]}<br>Correct Answer: ${q.answer}</p>`;
             });
-            resultHtml += `<h3>Final Score: ${score}/${questions.length}</h3>`;
+            resultHtml += `<h3>Final Score: ${score}/5</h3>`;
             document.getElementById("quiz-container").innerHTML = resultHtml;
         }
+
+        const questions = {
+            Geography: [
+                { question: "What is the capital of France?", options: ["Paris", "London", "Berlin", "Rome"], answer: "Paris" },
+                { question: "Which is the longest river in the world?", options: ["Amazon", "Nile", "Yangtze", "Mississippi"], answer: "Nile" },
+                { question: "Which continent has the most countries?", options: ["Asia", "Africa", "Europe", "South America"], answer: "Africa" },
+                { question: "What is the smallest country in the world?", options: ["Vatican City", "Monaco", "San Marino", "Liechtenstein"], answer: "Vatican City" },
+                { question: "Which desert is the largest in the world?", options: ["Sahara", "Gobi", "Kalahari", "Antarctic"], answer: "Antarctic" }
+            ],
+            Sports: [
+                { question: "Who won the FIFA World Cup 2022?", options: ["Argentina", "France", "Brazil", "Germany"], answer: "Argentina" },
+                { question: "How many players are in a soccer team?", options: ["9", "10", "11", "12"], answer: "11" },
+                { question: "What sport is played at Wimbledon?", options: ["Cricket", "Tennis", "Basketball", "Golf"], answer: "Tennis" },
+                { question: "Who holds the record for most Olympic gold medals?", options: ["Usain Bolt", "Michael Phelps", "Simone Biles", "Carl Lewis"], answer: "Michael Phelps" },
+                { question: "Which country invented basketball?", options: ["USA", "Canada", "UK", "France"], answer: "Canada" }
+            ],
+            Politics: [
+                { question: "Who was the first President of the USA?", options: ["George Washington", "Thomas Jefferson", "Abraham Lincoln", "John Adams"], answer: "George Washington" },
+                { question: "Which political ideology promotes state ownership?", options: ["Communism", "Capitalism", "Socialism", "Fascism"], answer: "Communism" },
+                { question: "Which is the highest court in the USA?", options: ["Supreme Court", "High Court", "Federal Court", "District Court"], answer: "Supreme Court" },
+                { question: "Who is the current Secretary-General of the UN?", options: ["Ban Ki-moon", "Kofi Annan", "António Guterres", "Boutros Boutros-Ghali"], answer: "António Guterres" },
+                { question: "Which country has the world's oldest parliament?", options: ["UK", "Iceland", "USA", "France"], answer: "Iceland" }
+            ]
+        };
     </script>
 </head>
-<body onload="loadQuestion()">
-    <div id="quiz-container" class="quiz-container">
-        <h2>Online Quiz</h2>
-        <p id="timer">Time Left: 20 sec</p>
-        <p id="question-text"></p>
-        <div id="options"></div>
-        <button onclick="nextQuestion()">Next</button>
+<body>
+    <div id="category-selection">
+        <h2>Select a Category</h2>
+        <button class="category-btn" onclick="selectCategory('Geography')">Geography</button>
+        <button class="category-btn" onclick="selectCategory('Sports')">Sports</button>
+        <button class="category-btn" onclick="selectCategory('Politics')">Politics</button>
     </div>
+    <div id="quiz-container" class="quiz-container hidden"></div>
 </body>
 </html>
+
+
